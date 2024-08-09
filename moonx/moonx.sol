@@ -116,6 +116,6 @@ contract DecentralLearning is Ownable {
    // }
 
     function updateMandToken(address _newMandToken) external onlyOwner {
-        mandToken = IERC20(_newMandToken);
+        mandToken = IERC20(_newMandToken);//MAND @ input details
     }
 }
