@@ -114,5 +114,7 @@ function attemptQuiz(uint256 _courseId, address _user, bool _passed) external {
 By implementing these improvements, the platform will be more secure, efficient, and scalable. These changes help ensure that the platform remains robust and easy to maintain as it grows in size and management with new incoming team developers
 
 
-
+### Resolve
+Lets do this with TYPESCRIPT, ive looked at the Mand ARC, its possible and it will be easier for the front-end.
+We should sync 7PM tonight.
 
