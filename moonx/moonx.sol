@@ -27,7 +27,12 @@ contract DecentralLearning is Ownable {
 
     struct Quiz {
         uint256 courseId;
-        string quizMetadataURI; // URI for quiz data (e.g., questions, answers)
+        string question;
+        string optionA;
+        string optionB;
+        string optionC;
+        string optionD;
+        bytes32 correctAnswerHash; // Hashed correct answer ("A", "B", "C", or "D")
     }
 
     struct Enrollment {
@@ -46,30 +51,12 @@ contract DecentralLearning is Ownable {
     event CourseApproved(uint256 indexed courseId);
     event QuizCreated(uint256 indexed courseId, uint256 quizId);
     event UserEnrolled(uint256 indexed courseId, address indexed user);
-    event QuizAttempted(
-        uint256 indexed courseId,
-        address indexed user,
-        bool passed
-    );
-    event RewardClaimed(
-        uint256 indexed courseId,
-        address indexed user,
-        uint256 amount
-    );
-    event CreatorRewardClaimed(
-        uint256 indexed courseId,
-        address indexed creator,
-        uint256 amount
-    );
-    event CreatorWithdrawal(
-        uint256 indexed courseId,
-        address indexed creator,
-        uint256 amount
-    );
+    event QuizAttempted(uint256 indexed courseId, address indexed user, bool passed);
+    event RewardClaimed(uint256 indexed courseId, address indexed user, uint256 amount);
+    event CreatorRewardClaimed(uint256 indexed courseId, address indexed creator, uint256 amount);
+    event CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount);
 
-    constructor(address _mandToken, address _reputationContract)
-        Ownable(msg.sender)
-    {
+    constructor(address _mandToken, address _reputationContract) Ownable(msg.sender) {
         reputationContract = IReputationContract(_reputationContract);
         mandToken = IERC20(_mandToken);
     }
@@ -96,22 +83,39 @@ contract DecentralLearning is Ownable {
             "Insufficient reputation to enroll"
         );
         require(courses[_courseId].approved, "Course not approved");
-        require(
-            !enrollments[msg.sender][_courseId].isEnrolled,
-            "Already enrolled"
-        );
+        require(!enrollments[msg.sender][_courseId].isEnrolled, "Already enrolled");
 
         enrollments[msg.sender][_courseId].isEnrolled = true;
         emit UserEnrolled(_courseId, msg.sender);
     }
 
-    function createQuiz(uint256 _courseId, string memory _quizMetadataURI) external {
+    function createQuiz(
+        uint256 _courseId,
+        string memory _question,
+        string memory _optionA,
+        string memory _optionB,
+        string memory _optionC,
+        string memory _optionD,
+        string memory _correctAnswer
+    ) external {
         require(msg.sender == courses[_courseId].creator, "Only course creator can create a quiz");
         require(courses[_courseId].approved, "Course must be approved to create a quiz");
+        require(
+            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("A")) ||
+            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("B")) ||
+            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("C")) ||
+            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("D")),
+            "Invalid correct answer"
+        );
 
         Quiz memory newQuiz = Quiz({
             courseId: _courseId,
-            quizMetadataURI: _quizMetadataURI
+            question: _question,
+            optionA: _optionA,
+            optionB: _optionB,
+            optionC: _optionC,
+            optionD: _optionD,
+            correctAnswerHash: keccak256(abi.encodePacked(_correctAnswer))
         });
 
         courseQuizzes[_courseId].push(newQuiz);
@@ -119,27 +123,29 @@ contract DecentralLearning is Ownable {
         emit QuizCreated(_courseId, quizId);
     }
 
-    function attemptQuiz(
-        uint256 _courseId,
-        address _user,
-        bool _passed
-    ) external {
-        require(
-            msg.sender == courses[_courseId].creator || msg.sender == owner(),
-            "Not authorized"
-        );
-        Enrollment storage enrollment = enrollments[_user][_courseId];
+    function attemptQuiz(uint256 _courseId, string memory _answer) external {
+        Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.isEnrolled, "User not enrolled in this course");
         require(enrollment.attemptCount < 2, "Maximum attempts reached");
         require(!enrollment.hasPassed, "User has already passed this course");
 
         enrollment.attemptCount++;
-        if (_passed) {
+        Quiz[] memory quizzes = courseQuizzes[_courseId];
+        bool passed = true;
+
+        for (uint256 i = 0; i < quizzes.length; i++) {
+            if (keccak256(abi.encodePacked(_answer)) != quizzes[i].correctAnswerHash) {
+                passed = false;
+                break;
+            }
+        }
+
+        if (passed) {
             enrollment.hasPassed = true;
             courses[_courseId].passedStudents++;
         }
 
-        emit QuizAttempted(_courseId, _user, _passed);
+        emit QuizAttempted(_courseId, msg.sender, passed);
     }
 
     function claimStudentReward(uint256 _courseId) external {
@@ -148,10 +154,7 @@ contract DecentralLearning is Ownable {
         require(!enrollment.hasClaimedReward, "Reward already claimed");
 
         enrollment.hasClaimedReward = true;
-        require(
-            mandToken.transfer(msg.sender, STUDENT_REWARD_AMOUNT),
-            "Failed to transfer MAND tokens"
-        );
+        require(mandToken.transfer(msg.sender, STUDENT_REWARD_AMOUNT), "Failed to transfer MAND tokens");
         courses[_courseId].totalRewarded += STUDENT_REWARD_AMOUNT;
 
         emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
@@ -159,49 +162,29 @@ contract DecentralLearning is Ownable {
 
     function claimCreatorReward(uint256 _courseId) external {
         Course storage course = courses[_courseId];
-        require(
-            msg.sender == course.creator,
-            "Only course creator can claim reward"
-        );
+        require(msg.sender == course.creator, "Only course creator can claim reward");
         require(course.approved, "Course not approved");
 
         uint256 rewardAmount = course.passedStudents * CREATOR_REWARD_AMOUNT;
         course.passedStudents = 0; // Reset passed students count
         course.totalRewarded += rewardAmount;
 
-        require(
-            mandToken.transfer(msg.sender, rewardAmount),
-            "Failed to transfer MAND tokens"
-        );
+        require(mandToken.transfer(msg.sender, rewardAmount), "Failed to transfer MAND tokens");
         emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
     }
 
-    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount)
-        external
-    {
+    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external {
         Course storage course = courses[_courseId];
-        require(
-            msg.sender == course.creator,
-            "Only course creator can withdraw tokens"
-        );
-        require(
-            course.totalRewarded >= _amount,
-            "Insufficient rewarded tokens to withdraw"
-        );
+        require(msg.sender == course.creator, "Only course creator can withdraw tokens");
+        require(course.totalRewarded >= _amount, "Insufficient rewarded tokens to withdraw");
 
         course.totalRewarded -= _amount;
-        require(
-            mandToken.transfer(msg.sender, _amount),
-            "Failed to transfer MAND tokens"
-        );
+        require(mandToken.transfer(msg.sender, _amount), "Failed to transfer MAND tokens");
 
         emit CreatorWithdrawal(_courseId, msg.sender, _amount);
     }
 
-    function updateReputationContract(address _newReputationContract)
-        external
-        onlyOwner
-    {
+    function updateReputationContract(address _newReputationContract) external onlyOwner {
         reputationContract = IReputationContract(_newReputationContract);
     }
 
@@ -210,9 +193,6 @@ contract DecentralLearning is Ownable {
     }
 
     function withdrawExcessTokens(uint256 _amount) external onlyOwner {
-        require(
-            mandToken.transfer(owner(), _amount),
-            "Failed to withdraw tokens"
-        );
+        require(mandToken.transfer(owner(), _amount), "Failed to withdraw tokens");
     }
 }
