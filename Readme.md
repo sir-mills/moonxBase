@@ -63,7 +63,3 @@ The DecentralLearning smart contract provides a decentralized platform for cours
 - CreatorRewardClaimed(uint256 indexed courseId, address indexed creator, uint256 amount): Emitted when a creator claims their reward.
 - CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount): Emitted when a creator withdraws rewarded tokens.
 
-### Setup
-1. Install Dependencies: Ensure that you have the necessary dependencies like OpenZeppelin contracts.
-2. Deploy Contract: Deploy the contract using your preferred method (e.g., Remix, Truffle, Hardhat).
-3. Initialize Contracts: After deployment, initialize the contract with the correct MAND token and reputation contract addresses.
