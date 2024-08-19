@@ -62,7 +62,7 @@ contract DecentralLearning is Ownable, Pausable {
         mandToken = IERC20(_mandToken);
     }
 
-    function createCourse(string memory _metadataURI) external {
+    function createCourse(string memory _metadataURI) external whenNotPaused {
         require(
             reputationContract.reputation(msg.sender) >= POST_THRESHOLD,
             "Insufficient reputation to create course"
@@ -78,7 +78,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit CourseApproved(_courseId);
     }
 
-    function enrollInCourse(uint256 _courseId) external {
+    function enrollInCourse(uint256 _courseId) external whenNotPaused {
         require(
             reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD,
             "Insufficient reputation to enroll"
@@ -124,7 +124,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit QuizCreated(_courseId, quizId);
     }
 
-    function attemptQuiz(uint256 _courseId, string memory _answer) external {
+    function attemptQuiz(uint256 _courseId, string memory _answer) external whenNotPaused {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.isEnrolled, "User not enrolled in this course");
         require(enrollment.attemptCount < 2, "Maximum attempts reached");
@@ -149,7 +149,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
 
-    function claimStudentReward(uint256 _courseId) external {
+    function claimStudentReward(uint256 _courseId) external whenNotPaused {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.hasPassed, "Course not passed");
         require(!enrollment.hasClaimedReward, "Reward already claimed");
@@ -161,7 +161,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
     }
 
-    function claimCreatorReward(uint256 _courseId) external {
+    function claimCreatorReward(uint256 _courseId) external whenNotPaused {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can claim reward");
         require(course.approved, "Course not approved");
@@ -174,7 +174,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
     }
 
-    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external {
+    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external whenNotPaused {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can withdraw tokens");
         require(course.totalRewarded >= _amount, "Insufficient rewarded tokens to withdraw");
