@@ -124,7 +124,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit QuizCreated(_courseId, quizId);
     }
 
-    function attemptQuiz(uint256 _courseId, string memory _answer) external whenNotPaused {
+    function attemptQuiz(uint256 _courseId, string[] memory _answers) external {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.isEnrolled, "User not enrolled in this course");
         require(enrollment.attemptCount < 2, "Maximum attempts reached");
@@ -132,10 +132,15 @@ contract DecentralLearning is Ownable, Pausable {
 
         enrollment.attemptCount++;
         Quiz[] memory quizzes = courseQuizzes[_courseId];
+        require(_answers.length == quizzes.length, "Answer count mismatch");
+
         bool passed = true;
 
         for (uint256 i = 0; i < quizzes.length; i++) {
-            if (keccak256(abi.encodePacked(_answer)) != quizzes[i].correctAnswerHash) {
+            if (
+                keccak256(abi.encodePacked(_answers[i])) !=
+                quizzes[i].correctAnswerHash
+            ) {
                 passed = false;
                 break;
             }
