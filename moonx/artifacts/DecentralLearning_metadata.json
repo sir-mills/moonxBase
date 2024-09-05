@@ -9,11 +9,6 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_mandToken",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
 						"name": "_reputationContract",
 						"type": "address"
 					}
@@ -331,9 +326,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "string",
-						"name": "_answer",
-						"type": "string"
+						"internalType": "string[]",
+						"name": "_answers",
+						"type": "string[]"
 					}
 				],
 				"name": "attemptQuiz",
@@ -468,6 +463,11 @@
 						"internalType": "uint256",
 						"name": "totalRewarded",
 						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalEnrolled",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -583,19 +583,6 @@
 			},
 			{
 				"inputs": [],
-				"name": "mandToken",
-				"outputs": [
-					{
-						"internalType": "contract IERC20",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "owner",
 				"outputs": [
 					{
@@ -671,19 +658,6 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_newMandToken",
-						"type": "address"
-					}
-				],
-				"name": "updateMandToken",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
 						"name": "_newReputationContract",
 						"type": "address"
 					}
@@ -723,6 +697,10 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "receive"
 			}
 		],
 		"devdoc": {
@@ -801,14 +779,6 @@
 				"dweb:/ipfs/QmSPwPxX7d6TTWakN5jy5wsaGkS1y9TW8fuhGSraMkLk2B"
 			]
 		},
-		"@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-			"keccak256": "0xc6a8ff0ea489379b61faa647490411b80102578440ab9d84e9a957cc12164e70",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://0ea104e577e63faea3b69c415637e99e755dcbf64c5833d7140c35a714d6d90c",
-				"dweb:/ipfs/Qmau6x4Ns9XdyynRCNNp3RhLqijJjFm7z5fyZazfYFGYdq"
-			]
-		},
 		"@openzeppelin/contracts/utils/Context.sol": {
 			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
 			"license": "MIT",
@@ -818,11 +788,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0xf22c42d7277a4275dfb2fa0339ca66dfb996ede75fa4a82b37b8a8c25f4a4434",
+			"keccak256": "0x1e2f1290dfa5a488f5cfe1faa85c5410d96b860b4752a8a87e19f40fb0ba2694",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://6e34074f9e0cfceb6aa4270edac1f98bef1da2f6c84e3124059aeb928b47d744",
-				"dweb:/ipfs/QmaJJsBwGe4gFULWzVVHMq2uAzaSfNjyYDPpoLNToTRtWx"
+				"bzz-raw://35737fb3693f5bfd4fa6da3ee0549d9554096d463a9ad771d53ecc6f402892c0",
+				"dweb:/ipfs/QmaQEvP2ipSz6uJkjazv32br1eyUyLPiYjyseSQuSmdCQ9"
 			]
 		}
 	},

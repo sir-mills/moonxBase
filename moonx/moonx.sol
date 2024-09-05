@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
@@ -11,12 +10,11 @@ interface IReputationContract {
 
 contract DecentralLearning is Ownable, Pausable {
     IReputationContract public reputationContract;
-    IERC20 public mandToken;
 
-    uint256 public constant ENROLL_THRESHOLD = 10;
+    uint256 public constant ENROLL_THRESHOLD = 5;
     uint256 public constant POST_THRESHOLD = 50;
-    uint256 public constant STUDENT_REWARD_AMOUNT = 10 * 1e18; // 10 MAND tokens
-    uint256 public constant CREATOR_REWARD_AMOUNT = 1 * 1e18; // 1 MAND token per passed student
+    uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether; // 10 MAND tokens
+    uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; // 1 MAND token per passed student
 
     struct Course {
         address creator;
@@ -24,6 +22,7 @@ contract DecentralLearning is Ownable, Pausable {
         bool approved;
         uint256 passedStudents;
         uint256 totalRewarded;
+        uint256 totalEnrolled;
     }
 
     struct Quiz {
@@ -57,18 +56,14 @@ contract DecentralLearning is Ownable, Pausable {
     event CreatorRewardClaimed(uint256 indexed courseId, address indexed creator, uint256 amount);
     event CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount);
 
-    constructor(address _mandToken, address _reputationContract) Ownable(msg.sender) {
+    constructor(address _reputationContract) Ownable(msg.sender) {
         reputationContract = IReputationContract(_reputationContract);
-        mandToken = IERC20(_mandToken);
     }
 
     function createCourse(string memory _metadataURI) external whenNotPaused {
-        require(
-            reputationContract.reputation(msg.sender) >= POST_THRESHOLD,
-            "Insufficient reputation to create course"
-        );
+        require(reputationContract.reputation(msg.sender) >= POST_THRESHOLD, "Insufficient reputation to create course");
         uint256 courseId = courseCount++;
-        courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0);
+        courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
         emit CourseCreated(courseId, msg.sender);
     }
 
@@ -79,14 +74,12 @@ contract DecentralLearning is Ownable, Pausable {
     }
 
     function enrollInCourse(uint256 _courseId) external whenNotPaused {
-        require(
-            reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD,
-            "Insufficient reputation to enroll"
-        );
+        require(reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD, "Insufficient reputation to enroll");
         require(courses[_courseId].approved, "Course not approved");
         require(!enrollments[msg.sender][_courseId].isEnrolled, "Already enrolled");
 
         enrollments[msg.sender][_courseId].isEnrolled = true;
+        courses[_courseId].totalEnrolled++;
         emit UserEnrolled(_courseId, msg.sender);
     }
 
@@ -137,10 +130,7 @@ contract DecentralLearning is Ownable, Pausable {
         bool passed = true;
 
         for (uint256 i = 0; i < quizzes.length; i++) {
-            if (
-                keccak256(abi.encodePacked(_answers[i])) !=
-                quizzes[i].correctAnswerHash
-            ) {
+            if (keccak256(abi.encodePacked(_answers[i])) != quizzes[i].correctAnswerHash) {
                 passed = false;
                 break;
             }
@@ -160,8 +150,10 @@ contract DecentralLearning is Ownable, Pausable {
         require(!enrollment.hasClaimedReward, "Reward already claimed");
 
         enrollment.hasClaimedReward = true;
-        require(mandToken.transfer(msg.sender, STUDENT_REWARD_AMOUNT), "Failed to transfer MAND tokens");
         courses[_courseId].totalRewarded += STUDENT_REWARD_AMOUNT;
+
+        (bool success, ) = payable(msg.sender).call{value: STUDENT_REWARD_AMOUNT}("");
+        require(success, "Failed to send MAND");
 
         emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
     }
@@ -175,7 +167,9 @@ contract DecentralLearning is Ownable, Pausable {
         course.passedStudents = 0; // Reset passed students count
         course.totalRewarded += rewardAmount;
 
-        require(mandToken.transfer(msg.sender, rewardAmount), "Failed to transfer MAND tokens");
+        (bool success, ) = payable(msg.sender).call{value: rewardAmount}("");
+        require(success, "Failed to send MAND");
+
         emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
     }
 
@@ -185,12 +179,13 @@ contract DecentralLearning is Ownable, Pausable {
         require(course.totalRewarded >= _amount, "Insufficient rewarded tokens to withdraw");
 
         course.totalRewarded -= _amount;
-        require(mandToken.transfer(msg.sender, _amount), "Failed to transfer MAND tokens");
+        (bool success, ) = payable(msg.sender).call{value: _amount}("");
+        require(success, "Failed to send MAND");
 
         emit CreatorWithdrawal(_courseId, msg.sender, _amount);
     }
 
-      function pause() external onlyOwner {
+    function pause() external onlyOwner {
         _pause();
     }
 
@@ -202,11 +197,11 @@ contract DecentralLearning is Ownable, Pausable {
         reputationContract = IReputationContract(_newReputationContract);
     }
 
-    function updateMandToken(address _newMandToken) external onlyOwner {
-        mandToken = IERC20(_newMandToken);
+    function withdrawExcessTokens(uint256 _amount) external onlyOwner {
+        (bool success, ) = payable(owner()).call{value: _amount}("");
+        require(success, "Failed to withdraw tokens");
     }
 
-    function withdrawExcessTokens(uint256 _amount) external onlyOwner {
-        require(mandToken.transfer(owner(), _amount), "Failed to withdraw tokens");
-    }
+    // Function to receive MAND (required for the contract to receive MAND)
+    receive() external payable {}
 }
