@@ -15,6 +15,11 @@ contract DecentralLearning is Ownable, Pausable {
     uint256 public constant POST_THRESHOLD = 50;
     uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether; // 10 MAND tokens
     uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; // 1 MAND token per passed student
+    uint256 public constant GAS_FEE = 0.75 ether; // 0.75 MAND tokens
+    uint256 public constant WITHDRAWAL_INTERVAL = 100 days;
+
+    uint256 public lastWithdrawalTime;
+    uint256 public accumulatedFees;
 
     struct Course {
         address creator;
@@ -55,12 +60,24 @@ contract DecentralLearning is Ownable, Pausable {
     event RewardClaimed(uint256 indexed courseId, address indexed user, uint256 amount);
     event CreatorRewardClaimed(uint256 indexed courseId, address indexed creator, uint256 amount);
     event CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount);
+    event GasFeesWithdrawn(uint256 amount);
 
     constructor(address _reputationContract) Ownable(msg.sender) {
         reputationContract = IReputationContract(_reputationContract);
+        lastWithdrawalTime = block.timestamp;
     }
 
-    function createCourse(string memory _metadataURI) external whenNotPaused {
+    modifier collectGasFee() {
+        require(msg.value >= GAS_FEE, "Insufficient gas fee");
+        accumulatedFees += GAS_FEE;
+        uint256 excess = msg.value - GAS_FEE;
+        if (excess > 0) {
+            payable(msg.sender).transfer(excess);
+        }
+        _;
+    }
+
+    function createCourse(string memory _metadataURI) external payable whenNotPaused collectGasFee {
         require(reputationContract.reputation(msg.sender) >= POST_THRESHOLD, "Insufficient reputation to create course");
         uint256 courseId = courseCount++;
         courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
@@ -73,7 +90,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit CourseApproved(_courseId);
     }
 
-    function enrollInCourse(uint256 _courseId) external whenNotPaused {
+    function enrollInCourse(uint256 _courseId) external payable whenNotPaused collectGasFee {
         require(reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD, "Insufficient reputation to enroll");
         require(courses[_courseId].approved, "Course not approved");
         require(!enrollments[msg.sender][_courseId].isEnrolled, "Already enrolled");
@@ -91,7 +108,7 @@ contract DecentralLearning is Ownable, Pausable {
         string memory _optionC,
         string memory _optionD,
         string memory _correctAnswer
-    ) external {
+    ) external payable collectGasFee {
         require(msg.sender == courses[_courseId].creator, "Only course creator can create a quiz");
         require(courses[_courseId].approved, "Course must be approved to create a quiz");
         require(
@@ -117,7 +134,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit QuizCreated(_courseId, quizId);
     }
 
-    function attemptQuiz(uint256 _courseId, string[] memory _answers) external {
+    function attemptQuiz(uint256 _courseId, string[] memory _answers) external payable collectGasFee {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.isEnrolled, "User not enrolled in this course");
         require(enrollment.attemptCount < 2, "Maximum attempts reached");
@@ -144,7 +161,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
 
-    function claimStudentReward(uint256 _courseId) external whenNotPaused {
+    function claimStudentReward(uint256 _courseId) external payable whenNotPaused collectGasFee {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.hasPassed, "Course not passed");
         require(!enrollment.hasClaimedReward, "Reward already claimed");
@@ -158,7 +175,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
     }
 
-    function claimCreatorReward(uint256 _courseId) external whenNotPaused {
+    function claimCreatorReward(uint256 _courseId) external payable whenNotPaused collectGasFee {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can claim reward");
         require(course.approved, "Course not approved");
@@ -173,7 +190,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
     }
 
-    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external whenNotPaused {
+    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external payable whenNotPaused collectGasFee {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can withdraw tokens");
         require(course.totalRewarded >= _amount, "Insufficient rewarded tokens to withdraw");
@@ -183,6 +200,18 @@ contract DecentralLearning is Ownable, Pausable {
         require(success, "Failed to send MAND");
 
         emit CreatorWithdrawal(_courseId, msg.sender, _amount);
+    }
+
+    function withdrawGasFees() external onlyOwner {
+        require(block.timestamp >= lastWithdrawalTime + WITHDRAWAL_INTERVAL, "Withdrawal interval not reached");
+        uint256 amount = accumulatedFees;
+        accumulatedFees = 0;
+        lastWithdrawalTime = block.timestamp;
+
+        (bool success, ) = payable(owner()).call{value: amount}("");
+        require(success, "Failed to withdraw gas fees");
+
+        emit GasFeesWithdrawn(amount);
     }
 
     function pause() external onlyOwner {
@@ -195,11 +224,6 @@ contract DecentralLearning is Ownable, Pausable {
 
     function updateReputationContract(address _newReputationContract) external onlyOwner {
         reputationContract = IReputationContract(_newReputationContract);
-    }
-
-    function withdrawExcessTokens(uint256 _amount) external onlyOwner {
-        (bool success, ) = payable(owner()).call{value: _amount}("");
-        require(success, "Failed to withdraw tokens");
     }
 
     // Function to receive MAND (required for the contract to receive MAND)
