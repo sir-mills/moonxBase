@@ -15,8 +15,8 @@ contract DecentralLearning is Ownable, Pausable {
     uint256 public constant POST_THRESHOLD = 5;
     uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether; // 10 MAND tokens
     uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; // 1 MAND token per passed student
-    uint256 public constant GAS_FEE = 0.75 ether; // 0.75 MAND tokens
-    uint256 public constant WITHDRAWAL_INTERVAL = 100 days;
+    uint256 public constant PLATFORMTX = 0.75 ether; // 0.75 MAND tokens
+    uint256 public constant WITHDRAWAL_INTERVAL = 50 days;
 
     uint256 public lastWithdrawalTime;
     uint256 public accumulatedFees;
@@ -67,20 +67,57 @@ contract DecentralLearning is Ownable, Pausable {
         lastWithdrawalTime = block.timestamp;
     }
 
-    modifier collectGasFee() {
-        require(msg.value >= GAS_FEE, "Insufficient gas fee");
-        accumulatedFees += GAS_FEE;
-        uint256 excess = msg.value - GAS_FEE;
+    modifier COLLECTPLATFORMTX() {
+        require(msg.value >= PLATFORMTX, "Insufficient gas fee");
+        accumulatedFees += PLATFORMTX;
+        uint256 excess = msg.value - PLATFORMTX;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
         _;
     }
 
-    function createCourse(string memory _metadataURI) external payable whenNotPaused collectGasFee {
+   function createCourse(
+        string memory _metadataURI,
+        string[] memory _questions,
+        string[] memory _optionAs,
+        string[] memory _optionBs,
+        string[] memory _optionCs,
+        string[] memory _optionDs,
+        string[] memory _correctAnswers
+    ) external payable whenNotPaused COLLECTPLATFORMTX {
         require(reputationContract.reputation(msg.sender) >= POST_THRESHOLD, "Insufficient reputation to create course");
+        require(_questions.length == 5 && _questions.length == _optionAs.length &&
+                _questions.length == _optionBs.length && _questions.length == _optionCs.length &&
+                _questions.length == _optionDs.length && _questions.length == _correctAnswers.length, 
+                "Invalid quiz data");
+
         uint256 courseId = courseCount++;
         courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
+        
+        // Store quizzes
+        for (uint256 i = 0; i < _questions.length; i++) {
+            require(
+                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("A")) ||
+                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("B")) ||
+                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("C")) ||
+                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("D")),
+                "Invalid correct answer"
+            );
+
+            Quiz memory newQuiz = Quiz({
+                courseId: courseId,
+                question: _questions[i],
+                optionA: _optionAs[i],
+                optionB: _optionBs[i],
+                optionC: _optionCs[i],
+                optionD: _optionDs[i],
+                correctAnswerHash: keccak256(abi.encodePacked(_correctAnswers[i]))
+            });
+
+            courseQuizzes[courseId].push(newQuiz);
+        }
+
         emit CourseCreated(courseId, msg.sender);
     }
 
@@ -90,7 +127,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit CourseApproved(_courseId);
     }
 
-    function enrollInCourse(uint256 _courseId) external payable whenNotPaused collectGasFee {
+    function enrollInCourse(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
         require(reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD, "Insufficient reputation to enroll");
         require(courses[_courseId].approved, "Course not approved");
         require(!enrollments[msg.sender][_courseId].isEnrolled, "Already enrolled");
@@ -100,41 +137,8 @@ contract DecentralLearning is Ownable, Pausable {
         emit UserEnrolled(_courseId, msg.sender);
     }
 
-    function createQuiz(
-        uint256 _courseId,
-        string memory _question,
-        string memory _optionA,
-        string memory _optionB,
-        string memory _optionC,
-        string memory _optionD,
-        string memory _correctAnswer
-    ) external payable collectGasFee {
-        require(msg.sender == courses[_courseId].creator, "Only course creator can create a quiz");
-        require(courses[_courseId].approved, "Course must be approved to create a quiz");
-        require(
-            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("A")) ||
-            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("B")) ||
-            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("C")) ||
-            keccak256(abi.encodePacked(_correctAnswer)) == keccak256(abi.encodePacked("D")),
-            "Invalid correct answer"
-        );
 
-        Quiz memory newQuiz = Quiz({
-            courseId: _courseId,
-            question: _question,
-            optionA: _optionA,
-            optionB: _optionB,
-            optionC: _optionC,
-            optionD: _optionD,
-            correctAnswerHash: keccak256(abi.encodePacked(_correctAnswer))
-        });
-
-        courseQuizzes[_courseId].push(newQuiz);
-        uint256 quizId = courseQuizzes[_courseId].length - 1;
-        emit QuizCreated(_courseId, quizId);
-    }
-
-    function attemptQuiz(uint256 _courseId, string[] memory _answers) external payable collectGasFee {
+    function attemptQuiz(uint256 _courseId, string[] memory _answers) external payable COLLECTPLATFORMTX {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.isEnrolled, "User not enrolled in this course");
         require(enrollment.attemptCount < 2, "Maximum attempts reached");
@@ -156,12 +160,19 @@ contract DecentralLearning is Ownable, Pausable {
         if (passed) {
             enrollment.hasPassed = true;
             courses[_courseId].passedStudents++;
+            courses[_courseId].totalRewarded += STUDENT_REWARD_AMOUNT;
+
+            // Automatically send reward to student
+            (bool success, ) = payable(msg.sender).call{value: STUDENT_REWARD_AMOUNT}("");
+            require(success, "Failed to send MAND");
+
+            emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
         }
 
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
 
-    function claimStudentReward(uint256 _courseId) external payable whenNotPaused collectGasFee {
+    function claimStudentReward(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
         require(enrollment.hasPassed, "Course not passed");
         require(!enrollment.hasClaimedReward, "Reward already claimed");
@@ -175,7 +186,7 @@ contract DecentralLearning is Ownable, Pausable {
         emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
     }
 
-    function claimCreatorReward(uint256 _courseId) external payable whenNotPaused collectGasFee {
+     function claimCreatorReward(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can claim reward");
         require(course.approved, "Course not approved");
@@ -190,17 +201,6 @@ contract DecentralLearning is Ownable, Pausable {
         emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
     }
 
-    function withdrawCreatorTokens(uint256 _courseId, uint256 _amount) external payable whenNotPaused collectGasFee {
-        Course storage course = courses[_courseId];
-        require(msg.sender == course.creator, "Only course creator can withdraw tokens");
-        require(course.totalRewarded >= _amount, "Insufficient rewarded tokens to withdraw");
-
-        course.totalRewarded -= _amount;
-        (bool success, ) = payable(msg.sender).call{value: _amount}("");
-        require(success, "Failed to send MAND");
-
-        emit CreatorWithdrawal(_courseId, msg.sender, _amount);
-    }
 
     function withdrawGasFees() external onlyOwner {
         require(block.timestamp >= lastWithdrawalTime + WITHDRAWAL_INTERVAL, "Withdrawal interval not reached");

@@ -294,7 +294,7 @@
 			},
 			{
 				"inputs": [],
-				"name": "GAS_FEE",
+				"name": "PLATFORMTX",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -531,52 +531,39 @@
 						"internalType": "string",
 						"name": "_metadataURI",
 						"type": "string"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_questions",
+						"type": "string[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_optionAs",
+						"type": "string[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_optionBs",
+						"type": "string[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_optionCs",
+						"type": "string[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_optionDs",
+						"type": "string[]"
+					},
+					{
+						"internalType": "string[]",
+						"name": "_correctAnswers",
+						"type": "string[]"
 					}
 				],
 				"name": "createCourse",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_courseId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "_question",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_optionA",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_optionB",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_optionC",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_optionD",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_correctAnswer",
-						"type": "string"
-					}
-				],
-				"name": "createQuiz",
 				"outputs": [],
 				"stateMutability": "payable",
 				"type": "function"
@@ -733,24 +720,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_courseId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "withdrawCreatorTokens",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "withdrawGasFees",
 				"outputs": [],
@@ -847,11 +816,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x5df3fe5649dcdd26a6609cfd88e8a26336f9b201ceba330b00050f361bb3452d",
+			"keccak256": "0x9609212b4b0fc956040150b8b4f14c9a6e44431f6270732fb512bce82020e30f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://fb88a45d5671466d784df33f938fccda400d0a1abad2f937f22011bb134bc181",
-				"dweb:/ipfs/QmdBeADJPLUTR1NS3HUZifaertUihBWi7yHhD8bhDsUT9T"
+				"bzz-raw://7a341c6850aaa115c0cc74901425e5919df43efb35d2692d2ea6af0e40c8df0d",
+				"dweb:/ipfs/QmXngSX4UacuNc8oKsRzoQTLqfxxB34kqE1bxBiZoo673u"
 			]
 		}
 	},
