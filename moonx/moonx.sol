@@ -12,7 +12,7 @@ contract DecentralLearning is Ownable, Pausable {
     IReputationContract public reputationContract;
 
     uint256 public constant ENROLL_THRESHOLD = 5;
-    uint256 public constant POST_THRESHOLD = 50;
+    uint256 public constant POST_THRESHOLD = 5;
     uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether; // 10 MAND tokens
     uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; // 1 MAND token per passed student
     uint256 public constant GAS_FEE = 0.75 ether; // 0.75 MAND tokens

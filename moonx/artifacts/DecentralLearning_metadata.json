@@ -124,6 +124,19 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "GasFeesWithdrawn",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "previousOwner",
@@ -281,6 +294,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "GAS_FEE",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "POST_THRESHOLD",
 				"outputs": [
 					{
@@ -295,6 +321,32 @@
 			{
 				"inputs": [],
 				"name": "STUDENT_REWARD_AMOUNT",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "WITHDRAWAL_INTERVAL",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "accumulatedFees",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -333,7 +385,7 @@
 				],
 				"name": "attemptQuiz",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -346,7 +398,7 @@
 				],
 				"name": "claimCreatorReward",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -359,7 +411,7 @@
 				],
 				"name": "claimStudentReward",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -483,7 +535,7 @@
 				],
 				"name": "createCourse",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -526,7 +578,7 @@
 				],
 				"name": "createQuiz",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -539,7 +591,7 @@
 				],
 				"name": "enrollInCourse",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -576,6 +628,19 @@
 						"internalType": "bool",
 						"name": "hasClaimedReward",
 						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "lastWithdrawalTime",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -682,18 +747,12 @@
 				],
 				"name": "withdrawCreatorTokens",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "withdrawExcessTokens",
+				"inputs": [],
+				"name": "withdrawGasFees",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -788,11 +847,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x1e2f1290dfa5a488f5cfe1faa85c5410d96b860b4752a8a87e19f40fb0ba2694",
+			"keccak256": "0x5df3fe5649dcdd26a6609cfd88e8a26336f9b201ceba330b00050f361bb3452d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://35737fb3693f5bfd4fa6da3ee0549d9554096d463a9ad771d53ecc6f402892c0",
-				"dweb:/ipfs/QmaQEvP2ipSz6uJkjazv32br1eyUyLPiYjyseSQuSmdCQ9"
+				"bzz-raw://fb88a45d5671466d784df33f938fccda400d0a1abad2f937f22011bb134bc181",
+				"dweb:/ipfs/QmdBeADJPLUTR1NS3HUZifaertUihBWi7yHhD8bhDsUT9T"
 			]
 		}
 	},
