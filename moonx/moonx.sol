@@ -171,21 +171,6 @@ contract DecentralLearning is Ownable, Pausable {
 
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
-
-    function claimStudentReward(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
-        Enrollment storage enrollment = enrollments[msg.sender][_courseId];
-        require(enrollment.hasPassed, "Course not passed");
-        require(!enrollment.hasClaimedReward, "Reward already claimed");
-
-        enrollment.hasClaimedReward = true;
-        courses[_courseId].totalRewarded += STUDENT_REWARD_AMOUNT;
-
-        (bool success, ) = payable(msg.sender).call{value: STUDENT_REWARD_AMOUNT}("");
-        require(success, "Failed to send MAND");
-
-        emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
-    }
-
      function claimCreatorReward(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
         Course storage course = courses[_courseId];
         require(msg.sender == course.creator, "Only course creator can claim reward");

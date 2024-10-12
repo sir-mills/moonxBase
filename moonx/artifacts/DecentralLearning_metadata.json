@@ -402,19 +402,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_courseId",
-						"type": "uint256"
-					}
-				],
-				"name": "claimStudentReward",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "courseCount",
 				"outputs": [
@@ -816,11 +803,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x9609212b4b0fc956040150b8b4f14c9a6e44431f6270732fb512bce82020e30f",
+			"keccak256": "0x1380f0320afa44aef337700370f71a79c795b47d3cf4aa6c6fa653e149696e80",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7a341c6850aaa115c0cc74901425e5919df43efb35d2692d2ea6af0e40c8df0d",
-				"dweb:/ipfs/QmXngSX4UacuNc8oKsRzoQTLqfxxB34kqE1bxBiZoo673u"
+				"bzz-raw://8984efbd4198baf69df5a3a5a281c7d24a98f0f68c957236deb03e7ccc8368df",
+				"dweb:/ipfs/QmT4qFnogsSBvmY8UCZdok1EyXBRh2YBLMHwLsPVp6rBAZ"
 			]
 		}
 	},
