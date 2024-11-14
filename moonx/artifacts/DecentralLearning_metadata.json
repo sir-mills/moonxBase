@@ -92,31 +92,6 @@
 						"type": "uint256"
 					}
 				],
-				"name": "CreatorRewardClaimed",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "courseId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "creator",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "amount",
-						"type": "uint256"
-					}
-				],
 				"name": "CreatorWithdrawal",
 				"type": "event"
 			},
@@ -384,19 +359,6 @@
 					}
 				],
 				"name": "attemptQuiz",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_courseId",
-						"type": "uint256"
-					}
-				],
-				"name": "claimCreatorReward",
 				"outputs": [],
 				"stateMutability": "payable",
 				"type": "function"
@@ -708,7 +670,7 @@
 			},
 			{
 				"inputs": [],
-				"name": "withdrawGasFees",
+				"name": "w_PlatformFees",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -803,11 +765,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x1380f0320afa44aef337700370f71a79c795b47d3cf4aa6c6fa653e149696e80",
+			"keccak256": "0x4496fe97aa012d7d2a0ab1afedea8918cb2e80421439b0be1dd34097cc9167e7",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8984efbd4198baf69df5a3a5a281c7d24a98f0f68c957236deb03e7ccc8368df",
-				"dweb:/ipfs/QmT4qFnogsSBvmY8UCZdok1EyXBRh2YBLMHwLsPVp6rBAZ"
+				"bzz-raw://e48cf395752aabdffb1142cf326cd6979262d45814d0ea0eed7a24321b99b6fe",
+				"dweb:/ipfs/QmSFPVLRV4yVraCCQNkTrn66m6w31SEsCoPfksPg5HxzUr"
 			]
 		}
 	},

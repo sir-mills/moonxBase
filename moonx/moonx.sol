@@ -11,12 +11,12 @@ interface IReputationContract {
 contract DecentralLearning is Ownable, Pausable {
     IReputationContract public reputationContract;
 
-    uint256 public constant ENROLL_THRESHOLD = 5;
+    uint256 public constant ENROLL_THRESHOLD = 1;
     uint256 public constant POST_THRESHOLD = 5;
-    uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether; // 10 MAND tokens
-    uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; // 1 MAND token per passed student
-    uint256 public constant PLATFORMTX = 0.75 ether; // 0.75 MAND tokens
-    uint256 public constant WITHDRAWAL_INTERVAL = 50 days;
+    uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether;
+    uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; 
+    uint256 public constant PLATFORMTX = 0.75 ether; 
+    uint256 public constant WITHDRAWAL_INTERVAL = 31 days;
 
     uint256 public lastWithdrawalTime;
     uint256 public accumulatedFees;
@@ -58,7 +58,6 @@ contract DecentralLearning is Ownable, Pausable {
     event UserEnrolled(uint256 indexed courseId, address indexed user);
     event QuizAttempted(uint256 indexed courseId, address indexed user, bool passed);
     event RewardClaimed(uint256 indexed courseId, address indexed user, uint256 amount);
-    event CreatorRewardClaimed(uint256 indexed courseId, address indexed creator, uint256 amount);
     event CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount);
     event GasFeesWithdrawn(uint256 amount);
 
@@ -171,23 +170,9 @@ contract DecentralLearning is Ownable, Pausable {
 
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
-     function claimCreatorReward(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
-        Course storage course = courses[_courseId];
-        require(msg.sender == course.creator, "Only course creator can claim reward");
-        require(course.approved, "Course not approved");
-
-        uint256 rewardAmount = course.passedStudents * CREATOR_REWARD_AMOUNT;
-        course.passedStudents = 0; // Reset passed students count
-        course.totalRewarded += rewardAmount;
-
-        (bool success, ) = payable(msg.sender).call{value: rewardAmount}("");
-        require(success, "Failed to send MAND");
-
-        emit CreatorRewardClaimed(_courseId, msg.sender, rewardAmount);
-    }
 
 
-    function withdrawGasFees() external onlyOwner {
+    function w_PlatformFees() external onlyOwner {
         require(block.timestamp >= lastWithdrawalTime + WITHDRAWAL_INTERVAL, "Withdrawal interval not reached");
         uint256 amount = accumulatedFees;
         accumulatedFees = 0;
@@ -211,6 +196,5 @@ contract DecentralLearning is Ownable, Pausable {
         reputationContract = IReputationContract(_newReputationContract);
     }
 
-    // Function to receive MAND (required for the contract to receive MAND)
     receive() external payable {}
 }
