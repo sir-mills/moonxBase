@@ -77,11 +77,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x4496fe97aa012d7d2a0ab1afedea8918cb2e80421439b0be1dd34097cc9167e7",
+			"keccak256": "0x8641e719b807445f4ded609181bc223bbf20327d332fc3cab5c0e12dc005b2f0",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e48cf395752aabdffb1142cf326cd6979262d45814d0ea0eed7a24321b99b6fe",
-				"dweb:/ipfs/QmSFPVLRV4yVraCCQNkTrn66m6w31SEsCoPfksPg5HxzUr"
+				"bzz-raw://5ccd874e690ce84ceb5251484eae2b343d8dd5261bee5db764c184d0ff6105ec",
+				"dweb:/ipfs/QmXTc6gWcqjnMYhB7neeqNko6LHRSSvjyVg1z6VcoVUyTo"
 			]
 		}
 	},

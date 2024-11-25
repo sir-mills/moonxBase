@@ -11,11 +11,11 @@ interface IReputationContract {
 contract DecentralLearning is Ownable, Pausable {
     IReputationContract public reputationContract;
 
-    uint256 public constant ENROLL_THRESHOLD = 1;
-    uint256 public constant POST_THRESHOLD = 5;
-    uint256 public constant STUDENT_REWARD_AMOUNT = 10 ether;
-    uint256 public constant CREATOR_REWARD_AMOUNT = 1 ether; 
-    uint256 public constant PLATFORMTX = 0.75 ether; 
+    uint256 public enrollThreshold;
+    uint256 public postThreshold;
+    uint256 public studentRewardAmount;
+    uint256 public creatorRewardAmount;
+    uint256 public platformTx; 
     uint256 public constant WITHDRAWAL_INTERVAL = 31 days;
 
     uint256 public lastWithdrawalTime;
@@ -64,12 +64,17 @@ contract DecentralLearning is Ownable, Pausable {
     constructor(address _reputationContract) Ownable(msg.sender) {
         reputationContract = IReputationContract(_reputationContract);
         lastWithdrawalTime = block.timestamp;
+        enrollThreshold = 1 ether;
+        postThreshold = 5 ether;
+        studentRewardAmount = 10 ether;
+        creatorRewardAmount = 1 ether;
+        platformTx = 0.75 ether;
     }
 
     modifier COLLECTPLATFORMTX() {
-        require(msg.value >= PLATFORMTX, "Insufficient gas fee");
-        accumulatedFees += PLATFORMTX;
-        uint256 excess = msg.value - PLATFORMTX;
+        require(msg.value >= platformTx, "Insufficient gas fee");
+        accumulatedFees += platformTx;
+        uint256 excess = msg.value - platformTx;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -85,7 +90,7 @@ contract DecentralLearning is Ownable, Pausable {
         string[] memory _optionDs,
         string[] memory _correctAnswers
     ) external payable whenNotPaused COLLECTPLATFORMTX {
-        require(reputationContract.reputation(msg.sender) >= POST_THRESHOLD, "Insufficient reputation to create course");
+        require(reputationContract.reputation(msg.sender) >= postThreshold, "Insufficient reputation to create course");
         require(_questions.length == 5 && _questions.length == _optionAs.length &&
                 _questions.length == _optionBs.length && _questions.length == _optionCs.length &&
                 _questions.length == _optionDs.length && _questions.length == _correctAnswers.length, 
@@ -127,7 +132,7 @@ contract DecentralLearning is Ownable, Pausable {
     }
 
     function enrollInCourse(uint256 _courseId) external payable whenNotPaused COLLECTPLATFORMTX {
-        require(reputationContract.reputation(msg.sender) >= ENROLL_THRESHOLD, "Insufficient reputation to enroll");
+        require(reputationContract.reputation(msg.sender) >= enrollThreshold, "Insufficient reputation to enroll");
         require(courses[_courseId].approved, "Course not approved");
         require(!enrollments[msg.sender][_courseId].isEnrolled, "Already enrolled");
 
@@ -159,13 +164,13 @@ contract DecentralLearning is Ownable, Pausable {
         if (passed) {
             enrollment.hasPassed = true;
             courses[_courseId].passedStudents++;
-            courses[_courseId].totalRewarded += STUDENT_REWARD_AMOUNT;
+            courses[_courseId].totalRewarded += studentRewardAmount;
 
             // Automatically send reward to student
-            (bool success, ) = payable(msg.sender).call{value: STUDENT_REWARD_AMOUNT}("");
+            (bool success, ) = payable(msg.sender).call{value: studentRewardAmount}("");
             require(success, "Failed to send MAND");
 
-            emit RewardClaimed(_courseId, msg.sender, STUDENT_REWARD_AMOUNT);
+            emit RewardClaimed(_courseId, msg.sender, studentRewardAmount);
         }
 
         emit QuizAttempted(_courseId, msg.sender, passed);
@@ -195,6 +200,29 @@ contract DecentralLearning is Ownable, Pausable {
     function updateReputationContract(address _newReputationContract) external onlyOwner {
         reputationContract = IReputationContract(_newReputationContract);
     }
+    function updateEnrollThreshold(uint256 _newThreshold) external onlyOwner {
+        require(_newThreshold > 0, "Threshold must be greater than 0");
+        enrollThreshold = _newThreshold;
+    }
 
+    function updatePostThreshold(uint256 _newThreshold) external onlyOwner {
+        require(_newThreshold > 0, "Threshold must be greater than 0");
+        postThreshold = _newThreshold;
+    }
+
+    function updateStudentReward(uint256 _newReward) external onlyOwner {
+        require(_newReward > 0, "Reward must be greater than 0");
+        studentRewardAmount = _newReward;
+    }
+
+    function updateCreatorReward(uint256 _newReward) external onlyOwner {
+        require(_newReward > 0, "Reward must be greater than 0");
+         creatorRewardAmount = _newReward;
+    }
+
+    function updatePlatformFee(uint256 _newFee) external onlyOwner {
+        require(_newFee > 0, "Fee must be greater than 0");
+        platformTx = _newFee;
+    }
     receive() external payable {}
 }

@@ -243,71 +243,6 @@
 			},
 			{
 				"inputs": [],
-				"name": "CREATOR_REWARD_AMOUNT",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "ENROLL_THRESHOLD",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "PLATFORMTX",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "POST_THRESHOLD",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "STUDENT_REWARD_AMOUNT",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "WITHDRAWAL_INTERVAL",
 				"outputs": [
 					{
@@ -518,6 +453,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "creatorRewardAmount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -528,6 +476,19 @@
 				"name": "enrollInCourse",
 				"outputs": [],
 				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "enrollThreshold",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -617,6 +578,32 @@
 			},
 			{
 				"inputs": [],
+				"name": "platformTx",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "postThreshold",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -630,6 +617,19 @@
 						"internalType": "contract IReputationContract",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "studentRewardAmount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -658,12 +658,77 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "_newReward",
+						"type": "uint256"
+					}
+				],
+				"name": "updateCreatorReward",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_newThreshold",
+						"type": "uint256"
+					}
+				],
+				"name": "updateEnrollThreshold",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_newFee",
+						"type": "uint256"
+					}
+				],
+				"name": "updatePlatformFee",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_newThreshold",
+						"type": "uint256"
+					}
+				],
+				"name": "updatePostThreshold",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_newReputationContract",
 						"type": "address"
 					}
 				],
 				"name": "updateReputationContract",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_newReward",
+						"type": "uint256"
+					}
+				],
+				"name": "updateStudentReward",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -765,11 +830,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x4496fe97aa012d7d2a0ab1afedea8918cb2e80421439b0be1dd34097cc9167e7",
+			"keccak256": "0x8641e719b807445f4ded609181bc223bbf20327d332fc3cab5c0e12dc005b2f0",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e48cf395752aabdffb1142cf326cd6979262d45814d0ea0eed7a24321b99b6fe",
-				"dweb:/ipfs/QmSFPVLRV4yVraCCQNkTrn66m6w31SEsCoPfksPg5HxzUr"
+				"bzz-raw://5ccd874e690ce84ceb5251484eae2b343d8dd5261bee5db764c184d0ff6105ec",
+				"dweb:/ipfs/QmXTc6gWcqjnMYhB7neeqNko6LHRSSvjyVg1z6VcoVUyTo"
 			]
 		}
 	},
