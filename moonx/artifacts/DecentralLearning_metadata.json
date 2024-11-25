@@ -391,9 +391,9 @@
 						"type": "bool"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "passedStudents",
-						"type": "uint256"
+						"type": "uint32"
 					},
 					{
 						"internalType": "uint256",
@@ -401,9 +401,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "totalEnrolled",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"stateMutability": "view",
@@ -830,11 +830,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x8641e719b807445f4ded609181bc223bbf20327d332fc3cab5c0e12dc005b2f0",
+			"keccak256": "0x8256cd381240dc416efec5c55c7498cc4a1e9360fea4801a6053e212a9c87d83",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5ccd874e690ce84ceb5251484eae2b343d8dd5261bee5db764c184d0ff6105ec",
-				"dweb:/ipfs/QmXTc6gWcqjnMYhB7neeqNko6LHRSSvjyVg1z6VcoVUyTo"
+				"bzz-raw://758ec766fb3551fc81c0f27b823cd8e7c56b71540c7b17cb3d8727ceb7d13f63",
+				"dweb:/ipfs/QmdkBDJzkGwEq6bTgn4WPaFbdo6foXZ8BpLXYmL6tDLenH"
 			]
 		}
 	},

@@ -16,7 +16,7 @@ contract DecentralLearning is Ownable, Pausable {
     uint256 public studentRewardAmount;
     uint256 public creatorRewardAmount;
     uint256 public platformTx; 
-    uint256 public constant WITHDRAWAL_INTERVAL = 31 days;
+    uint256 public immutable WITHDRAWAL_INTERVAL = 31 days;
 
     uint256 public lastWithdrawalTime;
     uint256 public accumulatedFees;
@@ -25,9 +25,9 @@ contract DecentralLearning is Ownable, Pausable {
         address creator;
         string metadataURI;
         bool approved;
-        uint256 passedStudents;
+        uint32 passedStudents;
         uint256 totalRewarded;
-        uint256 totalEnrolled;
+        uint32 totalEnrolled;
     }
 
     struct Quiz {
