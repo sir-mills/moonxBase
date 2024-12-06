@@ -3,9 +3,22 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 interface IReputationContract {
     function reputation(address user) external view returns (uint256);
+}
+
+contract MOONx is ERC20, Ownable {
+    constructor() ERC20("MOONX", "MOONX") Ownable(msg.sender) {}
+
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+    }
+
+    function burn(address from, uint256 amount) external onlyOwner {
+        _burn(from, amount);
+    }
 }
 
 contract DecentralLearning is Ownable, Pausable {
@@ -16,10 +29,13 @@ contract DecentralLearning is Ownable, Pausable {
     uint256 public studentRewardAmount;
     uint256 public creatorRewardAmount;
     uint256 public platformTx; 
-    uint256 public immutable WITHDRAWAL_INTERVAL = 31 days;
+    uint256 public immutable WITHDRAWAL_INTERVAL = 29 days;
 
     uint256 public lastWithdrawalTime;
     uint256 public accumulatedFees;
+
+    uint256[] public allCourseIds;
+    uint256[] public approvedCourseIds;
 
     struct Course {
         address creator;
@@ -47,9 +63,17 @@ contract DecentralLearning is Ownable, Pausable {
         bool hasClaimedReward;
     }
 
+    struct UserBalance {
+        uint256 moonxBalance;
+        uint256 mandBalance;
+
+    }
+
     mapping(uint256 => Course) public courses;
     mapping(address => mapping(uint256 => Enrollment)) public enrollments;
     mapping(uint256 => Quiz[]) public courseQuizzes; // Mapping from course ID to array of quizzes
+    mapping(address => UserBalance) public userBalances;
+
     uint256 public courseCount;
 
     event CourseCreated(uint256 indexed courseId, address indexed creator);
@@ -58,28 +82,24 @@ contract DecentralLearning is Ownable, Pausable {
     event UserEnrolled(uint256 indexed courseId, address indexed user);
     event QuizAttempted(uint256 indexed courseId, address indexed user, bool passed);
     event RewardClaimed(uint256 indexed courseId, address indexed user, uint256 amount);
-    event CreatorWithdrawal(uint256 indexed courseId, address indexed creator, uint256 amount);
+    event TokenWithdrawn(address indexed user, string tokenType, uint256 amount);
     event GasFeesWithdrawn(uint256 amount);
 
     constructor(address _reputationContract) Ownable(msg.sender) {
         reputationContract = IReputationContract(_reputationContract);
         lastWithdrawalTime = block.timestamp;
-        enrollThreshold = 1 ether;
+        enrollThreshold = 0 ether;
         postThreshold = 5 ether;
-        studentRewardAmount = 10 ether;
-        creatorRewardAmount = 1 ether;
-        platformTx = 0.75 ether;
+        studentRewardAmount = 0.50 ether;
+        creatorRewardAmount = 10 ether;
+        platformTx = 0.1 ether;
     }
 
-    modifier COLLECTPLATFORMTX() {
-        require(msg.value >= platformTx, "Insufficient gas fee");
-        accumulatedFees += platformTx;
-        uint256 excess = msg.value - platformTx;
-        if (excess > 0) {
-            payable(msg.sender).transfer(excess);
-        }
-        _;
-    }
+   modifier COLLECTPLATFORMTX() {
+    require(msg.value >= platformTx, "Insufficient gas fee");
+    accumulatedFees += platformTx;
+    _;
+}
 
    function createCourse(
         string memory _metadataURI,
@@ -98,7 +118,7 @@ contract DecentralLearning is Ownable, Pausable {
 
         uint256 courseId = courseCount++;
         courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
-        
+        allCourseIds.push(courseId);
         // Store quizzes
         for (uint256 i = 0; i < _questions.length; i++) {
             require(
@@ -128,6 +148,8 @@ contract DecentralLearning is Ownable, Pausable {
     function approveCourse(uint256 _courseId) external onlyOwner {
         require(!courses[_courseId].approved, "Course already approved");
         courses[_courseId].approved = true;
+        approvedCourseIds.push(_courseId);
+        userBalances[courses[_courseId].creator].moonxBalance += 100;
         emit CourseApproved(_courseId);
     }
 
@@ -138,9 +160,12 @@ contract DecentralLearning is Ownable, Pausable {
 
         enrollments[msg.sender][_courseId].isEnrolled = true;
         courses[_courseId].totalEnrolled++;
+
+        userBalances[msg.sender].moonxBalance += 100;
+        userBalances[courses[_courseId].creator].moonxBalance += 100;
+
         emit UserEnrolled(_courseId, msg.sender);
     }
-
 
     function attemptQuiz(uint256 _courseId, string[] memory _answers) external payable COLLECTPLATFORMTX {
         Enrollment storage enrollment = enrollments[msg.sender][_courseId];
@@ -166,6 +191,8 @@ contract DecentralLearning is Ownable, Pausable {
             courses[_courseId].passedStudents++;
             courses[_courseId].totalRewarded += studentRewardAmount;
 
+            userBalances[msg.sender].moonxBalance += 100;
+
             // Automatically send reward to student
             (bool success, ) = payable(msg.sender).call{value: studentRewardAmount}("");
             require(success, "Failed to send MAND");
@@ -175,7 +202,6 @@ contract DecentralLearning is Ownable, Pausable {
 
         emit QuizAttempted(_courseId, msg.sender, passed);
     }
-
 
     function w_PlatformFees() external onlyOwner {
         require(block.timestamp >= lastWithdrawalTime + WITHDRAWAL_INTERVAL, "Withdrawal interval not reached");
@@ -224,5 +250,28 @@ contract DecentralLearning is Ownable, Pausable {
         require(_newFee > 0, "Fee must be greater than 0");
         platformTx = _newFee;
     }
+
+    function getAllCourses() external view returns (Course[] memory) {
+        Course[] memory result = new Course[](allCourseIds.length);
+        for (uint256 i = 0; i < allCourseIds.length; i++) {
+            result[i] = courses[allCourseIds[i]];
+        }
+        return result;
+    }
+
+    function getApprovedCourses() external view returns (Course[] memory) {
+        Course[] memory result = new Course[](approvedCourseIds.length);
+        for (uint256 i = 0; i < approvedCourseIds.length; i++) {
+            result[i] = courses[approvedCourseIds[i]];
+        }
+    return result;
+    }   
+    function withdrawMoonx(uint256 amount) external whenNotPaused {
+    require(userBalances[msg.sender].moonxBalance >= amount, "Insufficient MOONX balance");
+    userBalances[msg.sender].moonxBalance -= amount;
+    MOONx(MOONX).mint(msg.sender, amount);
+
+    emit TokenWithdrawn(msg.sender, "MOONX", amount);
+}
     receive() external payable {}
 }
