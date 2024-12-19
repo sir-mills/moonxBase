@@ -10,9 +10,13 @@ interface IReputationContract {
 }
 
 contract MOONx is ERC20, Ownable {
-    constructor() ERC20("MOONX", "MOONX") Ownable(msg.sender) {}
+    uint256 public maxSupply = 100000000;
+    constructor() ERC20("MOONX", "MOONX") Ownable(msg.sender) {
+        
+    }
 
     function mint(address to, uint256 amount) external onlyOwner {
+        require(totalSupply() + amount <= maxSupply, "Exceeds max supply");
         _mint(to, amount);
     }
 
@@ -53,7 +57,7 @@ contract DecentralLearning is Ownable, Pausable {
         string optionB;
         string optionC;
         string optionD;
-        bytes32 correctAnswerHash; // Hashed correct answer ("A", "B", "C", or "D")
+        bytes32 correctAnswerHash;
     }
 
     struct Enrollment {
@@ -269,7 +273,7 @@ contract DecentralLearning is Ownable, Pausable {
     function withdrawMoonx(uint256 amount) external whenNotPaused {
     require(userBalances[msg.sender].moonxBalance >= amount, "Insufficient MOONX balance");
     userBalances[msg.sender].moonxBalance -= amount;
-    MOONx(MOONX).mint(msg.sender, amount);
+    
 
     emit TokenWithdrawn(msg.sender, "MOONX", amount);
 }

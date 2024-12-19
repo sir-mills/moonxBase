@@ -286,6 +286,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "maxSupply",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -622,11 +635,11 @@
 			]
 		},
 		"moonx/moonx.sol": {
-			"keccak256": "0x5024cd91e818ae0477282af80c75d68f0b1990d0830b4d6da4939fe892ddc324",
+			"keccak256": "0x5dd327c0d11a71d013dc42d98e1d4dc00501e80fd7cbdba1bb1ef55e9f814e36",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://be5f2289426832773cbcc406be9b28917994e00cf0ba4696044086a7476154c9",
-				"dweb:/ipfs/QmTWVp2aj5Nt42e8ZvqauEy5qRvjUa1mTd2d2ewViVtpZA"
+				"bzz-raw://8fca8a6ead0ec8fd5cfd80adfa4441e0cf2eb13aa2b916d291523336cfb0eff6",
+				"dweb:/ipfs/QmNTkH3tp7xxJmdMzG8J4rpSU8ovauXH5x1CaGYFvQf7aQ"
 			]
 		}
 	},
