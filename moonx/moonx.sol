@@ -50,15 +50,44 @@ contract DecentralLearning is Ownable, Pausable {
         uint32 totalEnrolled;
     }
 
-    struct Quiz {
-        uint256 courseId;
-        string question;
-        string optionA;
-        string optionB;
-        string optionC;
-        string optionD;
-        bytes32 correctAnswerHash;
-    }
+struct Quiz {
+    uint256 courseId;
+    // Question 1
+    string question1;
+    string q1_optionA;
+    string q1_optionB;
+    string q1_optionC;
+    string q1_optionD;
+    bytes32 q1_correctAnswerHash;
+    // Question 2
+    string question2;
+    string q2_optionA;
+    string q2_optionB;
+    string q2_optionC;
+    string q2_optionD;
+    bytes32 q2_correctAnswerHash;
+    // Question 3
+    string question3;
+    string q3_optionA;
+    string q3_optionB;
+    string q3_optionC;
+    string q3_optionD;
+    bytes32 q3_correctAnswerHash;
+    // Question 4
+    string question4;
+    string q4_optionA;
+    string q4_optionB;
+    string q4_optionC;
+    string q4_optionD;
+    bytes32 q4_correctAnswerHash;
+    // Question 5
+    string question5;
+    string q5_optionA;
+    string q5_optionB;
+    string q5_optionC;
+    string q5_optionD;
+    bytes32 q5_correctAnswerHash;
+}
 
     struct Enrollment {
         bool isEnrolled;
@@ -105,49 +134,103 @@ contract DecentralLearning is Ownable, Pausable {
     _;
 }
 
-   function createCourse(
-        string memory _metadataURI,
-        string[] memory _questions,
-        string[] memory _optionAs,
-        string[] memory _optionBs,
-        string[] memory _optionCs,
-        string[] memory _optionDs,
-        string[] memory _correctAnswers
-    ) external payable whenNotPaused COLLECTPLATFORMTX {
-        require(reputationContract.reputation(msg.sender) >= postThreshold, "Insufficient reputation to create course");
-        require(_questions.length == 5 && _questions.length == _optionAs.length &&
-                _questions.length == _optionBs.length && _questions.length == _optionCs.length &&
-                _questions.length == _optionDs.length && _questions.length == _correctAnswers.length, 
-                "Invalid quiz data");
+    function createCourse(
+    string memory _metadataURI,
+    // Question 1
+    string memory _question1,
+    string memory _q1_optionA,
+    string memory _q1_optionB,
+    string memory _q1_optionC,
+    string memory _q1_optionD,
+    string memory _q1_correctAnswer,
+    // Question 2
+    string memory _question2,
+    string memory _q2_optionA,
+    string memory _q2_optionB,
+    string memory _q2_optionC,
+    string memory _q2_optionD,
+    string memory _q2_correctAnswer,
+    // Question 3
+    string memory _question3,
+    string memory _q3_optionA,
+    string memory _q3_optionB,
+    string memory _q3_optionC,
+    string memory _q3_optionD,
+    string memory _q3_correctAnswer,
+    // Question 4
+    string memory _question4,
+    string memory _q4_optionA,
+    string memory _q4_optionB,
+    string memory _q4_optionC,
+    string memory _q4_optionD,
+    string memory _q4_correctAnswer,
+    // Question 5
+    string memory _question5,
+    string memory _q5_optionA,
+    string memory _q5_optionB,
+    string memory _q5_optionC,
+    string memory _q5_optionD,
+    string memory _q5_correctAnswer
+) external payable whenNotPaused COLLECTPLATFORMTX {
+    require(reputationContract.reputation(msg.sender) >= postThreshold, "Insufficient reputation to create course");
+    
+    // Validate all correct answers
+    require(
+        _validateAnswer(_q1_correctAnswer) &&
+        _validateAnswer(_q2_correctAnswer) &&
+        _validateAnswer(_q3_correctAnswer) &&
+        _validateAnswer(_q4_correctAnswer) &&
+        _validateAnswer(_q5_correctAnswer),
+        "Invalid correct answer format"
+    );
 
-        uint256 courseId = courseCount++;
-        courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
-        allCourseIds.push(courseId);
-        // Store quizzes
-        for (uint256 i = 0; i < _questions.length; i++) {
-            require(
-                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("A")) ||
-                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("B")) ||
-                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("C")) ||
-                keccak256(abi.encodePacked(_correctAnswers[i])) == keccak256(abi.encodePacked("D")),
-                "Invalid correct answer"
-            );
+    uint256 courseId = courseCount++;
+    courses[courseId] = Course(msg.sender, _metadataURI, false, 0, 0, 0);
+    allCourseIds.push(courseId);
 
-            Quiz memory newQuiz = Quiz({
-                courseId: courseId,
-                question: _questions[i],
-                optionA: _optionAs[i],
-                optionB: _optionBs[i],
-                optionC: _optionCs[i],
-                optionD: _optionDs[i],
-                correctAnswerHash: keccak256(abi.encodePacked(_correctAnswers[i]))
-            });
+    // Create quiz with all 5 questions
+    Quiz memory newQuiz = Quiz({
+        courseId: courseId,
+        // Question 1
+        question1: _question1,
+        q1_optionA: _q1_optionA,
+        q1_optionB: _q1_optionB,
+        q1_optionC: _q1_optionC,
+        q1_optionD: _q1_optionD,
+        q1_correctAnswerHash: keccak256(abi.encodePacked(_q1_correctAnswer)),
+        // Question 2
+        question2: _question2,
+        q2_optionA: _q2_optionA,
+        q2_optionB: _q2_optionB,
+        q2_optionC: _q2_optionC,
+        q2_optionD: _q2_optionD,
+        q2_correctAnswerHash: keccak256(abi.encodePacked(_q2_correctAnswer)),
+        // Question 3
+        question3: _question3,
+        q3_optionA: _q3_optionA,
+        q3_optionB: _q3_optionB,
+        q3_optionC: _q3_optionC,
+        q3_optionD: _q3_optionD,
+        q3_correctAnswerHash: keccak256(abi.encodePacked(_q3_correctAnswer)),
+        // Question 4
+        question4: _question4,
+        q4_optionA: _q4_optionA,
+        q4_optionB: _q4_optionB,
+        q4_optionC: _q4_optionC,
+        q4_optionD: _q4_optionD,
+        q4_correctAnswerHash: keccak256(abi.encodePacked(_q4_correctAnswer)),
+        // Question 5
+        question5: _question5,
+        q5_optionA: _q5_optionA,
+        q5_optionB: _q5_optionB,
+        q5_optionC: _q5_optionC,
+        q5_optionD: _q5_optionD,
+        q5_correctAnswerHash: keccak256(abi.encodePacked(_q5_correctAnswer))
+    });
 
-            courseQuizzes[courseId].push(newQuiz);
-        }
-
-        emit CourseCreated(courseId, msg.sender);
-    }
+    courseQuizzes[courseId].push(newQuiz);
+    emit CourseCreated(courseId, msg.sender);
+}
 
     function approveCourse(uint256 _courseId) external onlyOwner {
         require(!courses[_courseId].approved, "Course already approved");
